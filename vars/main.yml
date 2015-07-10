@@ -1,0 +1,16 @@
+---
+os_users:
+  foo:
+    comment: foo user comment
+    uid: 1001
+    group: test1
+    shell: /bin/bash
+    home: /home/foo
+    password: test12
+  bar:
+    comment: bar user comment
+    uid: 1002
+    group: test2
+    shell: /bin/bash
+    home: /home/bar
+    password: test2

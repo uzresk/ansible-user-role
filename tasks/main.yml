@@ -1,0 +1,5 @@
+---
+- name: install mkpasswd
+  yum: name=expect state=installed
+
+- include: user.yml os_users={{ os_users }} tags=user
