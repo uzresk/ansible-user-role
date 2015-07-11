@@ -12,13 +12,19 @@
   with_together: 
     - "{{os_users}}"
     - salt.results
+  when:
+    - "os_users[item.0].login == 'login'"
   register: passwordHashCommand
   ignore_errors: true
   changed_when: false
 
 - name: passwordHash
-  command: "{{ item.stdout }}"
-  with_items: passwordHashCommand.results
+  command: "{{ item.1.stdout }}"
+  with_together: 
+    - "{{os_users}}"
+    - passwordHashCommand.results
+  when:
+    - "os_users[item.0].login == 'login'"
   register: passwordHash
   ignore_errors: true
   changed_when: false
@@ -28,9 +34,20 @@
   local_action: >
     command sshpass -p {{ item.value.password }}  ssh {{ inventory_hostname }} -l {{ item.key }}
   with_dict: "{{ os_users }}"
-  register: result
+  when:
+    - "item.value.login == 'login'"
+  register: ssh_login 
   ignore_errors: true
   changed_when: false
+
+- name: create /sbin/nologin user
+  user: name="{{ item.key }}" state=present group="{{ item.value.group }}"
+        comment="{{ item.value.comment }}"
+        shell="{{ item.value.shell }}"
+  when:
+    - ssh_login | failed
+    - "item.value.login == 'nologin'"
+  with_dict: "{{os_users}}"
 
 - name: create user when password changed
   user: name="{{ item.0 }}" state=present group="{{ os_users[item.0].group }}"
@@ -39,7 +56,9 @@
   with_together:
     - "{{os_users}}"
     - passwordHash.results
-  when: result | failed
+  when: 
+    - ssh_login | failed
+    - "os_users[item.0].login == 'login'"
 
 - name: create user when password not changed
   user: name="{{ item.0 }}" state=present group="{{ os_users[item.0].group }}"
@@ -48,4 +67,7 @@
   with_together:
     - "{{os_users}}"
     - passwordHash.results
-  when: result | success
+  when: 
+    - ssh_login | success
+    - "os_users[item.0].login == 'login'"
+
