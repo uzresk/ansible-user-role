@@ -1,7 +1,17 @@
 ---
+- name: create /sbin/nologin user
+  user: name="{{ item.key }}" state=present group="{{ item.value.group }}"
+        comment="{{ item.value.comment }}"
+        shell="{{ item.value.shell }}"
+  when:
+    - "item.value.login == 'nologin'"
+  with_dict: "{{os_users}}"
+
 - name: generate passwod salt for new user
   shell: mkpasswd -l 20
   with_dict: "{{os_users}}"
+  when:
+    - "item.value.login == 'login'"
   register: salt
   ignore_errors: true
   changed_when: false
@@ -39,15 +49,6 @@
   register: ssh_login 
   ignore_errors: true
   changed_when: false
-
-- name: create /sbin/nologin user
-  user: name="{{ item.key }}" state=present group="{{ item.value.group }}"
-        comment="{{ item.value.comment }}"
-        shell="{{ item.value.shell }}"
-  when:
-    - ssh_login | failed
-    - "item.value.login == 'nologin'"
-  with_dict: "{{os_users}}"
 
 - name: create user when password changed
   user: name="{{ item.0 }}" state=present group="{{ os_users[item.0].group }}"
