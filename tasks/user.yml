@@ -3,6 +3,7 @@
   user: name="{{ item.key }}" state=present group="{{ item.value.group }}"
         comment="{{ item.value.comment }}"
         shell="{{ item.value.shell }}"
+        uid="{{ item.value.uid }}"
   when:
     - "item.value.login == 'nologin'"
   with_dict: "{{os_users}}"
@@ -54,6 +55,7 @@
   user: name="{{ item.0 }}" state=present group="{{ os_users[item.0].group }}"
         password="{{ item.1.stdout }}" comment="{{ os_users[item.0].comment }}"
         shell="{{ os_users[item.0].shell }}"
+        uid="{{ os_users[item.0].uid }}"
   with_together:
     - "{{os_users}}"
     - passwordHash.results
@@ -65,6 +67,7 @@
   user: name="{{ item.0 }}" state=present group="{{ os_users[item.0].group }}"
         comment="{{ os_users[item.0].comment }}"
         shell="{{ os_users[item.0].shell }}"
+        uid="{{ os_users[item.0].uid }}"
   with_together:
     - "{{os_users}}"
     - passwordHash.results
