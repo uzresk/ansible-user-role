@@ -5,14 +5,14 @@
         shell="{{ item.value.shell }}"
         uid="{{ item.value.uid }}"
   when:
-    - "item.value.login == 'nologin'"
+    - "item.value.shell == '/sbin/nologin'"
   with_dict: "{{os_users}}"
 
 - name: generate passwod salt for new user
   shell: mkpasswd -l 20
   with_dict: "{{os_users}}"
   when:
-    - "item.value.login == 'login'"
+    - "item.value.shell != '/sbin/nologin'"
   register: salt
   ignore_errors: true
   changed_when: false
@@ -24,7 +24,7 @@
     - "{{os_users}}"
     - salt.results
   when:
-    - "os_users[item.0].login == 'login'"
+    - "os_users[item.0].shell != '/sbin/nologin'"
   register: passwordHashCommand
   ignore_errors: true
   changed_when: false
@@ -35,7 +35,7 @@
     - "{{os_users}}"
     - passwordHashCommand.results
   when:
-    - "os_users[item.0].login == 'login'"
+    - "os_users[item.0].shell != '/sbin/nologin'"
   register: passwordHash
   ignore_errors: true
   changed_when: false
@@ -46,7 +46,7 @@
     command sshpass -p {{ item.value.password }}  ssh {{ inventory_hostname }} -l {{ item.key }}
   with_dict: "{{ os_users }}"
   when:
-    - "item.value.login == 'login'"
+    - "item.value.shell != '/sbin/nologin'"
   register: ssh_login 
   ignore_errors: true
   changed_when: false
@@ -61,7 +61,7 @@
     - passwordHash.results
   when: 
     - ssh_login | failed
-    - "os_users[item.0].login == 'login'"
+    - "os_users[item.0].shell != '/sbin/nologin'"
 
 - name: create user when password not changed
   user: name="{{ item.0 }}" state=present group="{{ os_users[item.0].group }}"
@@ -73,5 +73,5 @@
     - passwordHash.results
   when: 
     - ssh_login | success
-    - "os_users[item.0].login == 'login'"
+    - "os_users[item.0].shell != '/sbin/nologin'"
 

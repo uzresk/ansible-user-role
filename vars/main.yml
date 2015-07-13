@@ -1,7 +1,6 @@
 ---
 os_users:
   foo:
-    login: login
     comment: foo user comment
     uid: 1001
     group: test1
@@ -9,7 +8,6 @@ os_users:
     home: /home/foo
     password: test12
   bar:
-    login: login
     comment: bar user comment
     uid: 1002
     group: test2
@@ -17,7 +15,6 @@ os_users:
     home: /home/bar
     password: test2
   tomcat:
-    login: nologin
     comment: tomcat user
     uid: 1003
     group: test1
